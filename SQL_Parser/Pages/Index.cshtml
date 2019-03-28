@@ -1,0 +1,52 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="text-center">
+    <h5 class="text-info">Enter your SQL Query:</h5>
+    <p>
+
+        <form method="post">
+            @Html.AntiForgeryToken()
+            <textarea cols="150" rows="8" name="query" id="query"></textarea>
+        </form>
+
+        <button id="parse" type="button" class="btn-success btn-lg">Parse</button>
+        <div id="dvItems" style="font-size:24px;">
+        </div>
+    </p>
+</div>
+@section Scripts {
+    <script>
+
+        $('#parse').on('click', function () {
+                var query = $('#query').val();
+                $.ajax({
+                    type: "POST",
+                    url: "/Index?handler=Parse",
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader("XSRF-TOKEN",
+                            $('input:hidden[name="__RequestVerificationToken"]').val());
+                    },
+                    data: JSON.stringify({
+                        QueryText: query,
+                    }),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
+                        var dvItems = $("#dvItems");
+                        dvItems.empty();
+                        $.each(response, function (i, item) {
+                            var $tr = $('<li>').append(item).appendTo(dvItems);
+                        });
+                    },
+                    failure: function (response) {
+                        alert(response);
+                    }
+                });
+            }
+        );
+    </script>
+}
