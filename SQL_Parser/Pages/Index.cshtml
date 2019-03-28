@@ -23,12 +23,30 @@
         <div id="dvItems" style="font-size:24px;">
         </div>
     </p>
+    
+   
 </div>
+<main>
+    <div data-component=pretty-print data-on-load=app.setup class=flex-columns>
+        
+        <div>
+            <h3>AST Output:</h3>
+            <pre><output id="output"></output></pre>
+        </div>
+    </div>
+</main>
 @section Scripts {
     <script>
 
         $('#parse').on('click', function () {
-                var query = $('#query').val();
+            var query = $('#query').val();
+            var json = {
+                "message": "Put some JSON in the text box.",
+                "Id": "dds",
+                "year": 2019,
+                "ios": false,
+                "space": "🚀"
+            };
                 $.ajax({
                     type: "POST",
                     url: "/Index?handler=Parse",
@@ -42,11 +60,14 @@
                     contentType: "application/json; charset=utf-8",
                     dataType: "json",
                     success: function (response) {
-                        var dvItems = $("#dvItems");
-                        dvItems.empty();
-                        $.each(response, function (i, item) {
-                            var $tr = $('<li>').append(item).appendTo(dvItems);
+                        //var dvItems = $("#dvItems");
+                        //dvItems.empty();
+                        console.log(response);
+                       $.each(response, function (i, item) {
+                           console.log(item);
+                           //    var $tr = $('<li>').append(item).appendTo(dvItems);
                         });
+                        $('#output').html(response ? prettyPrintJson.toHtml(response) : '[EMPTY]');
                     },
                     failure: function (response) {
                         alert(response);
