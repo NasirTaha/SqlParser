@@ -16,11 +16,13 @@ namespace SQL_Parser.Pages
         public void OnGet()
         {
         }
-   
+
         public JsonResult OnPostParse()
         {
-            string query = "";
+            List<string> resultString = new List<string>();
+            try
             {
+                string queryText = "";
                 MemoryStream stream = new MemoryStream();
                 Request.Body.CopyTo(stream);
                 stream.Position = 0;
@@ -32,16 +34,44 @@ namespace SQL_Parser.Pages
                         var obj = JsonConvert.DeserializeObject<Query>(requestBody);
                         if (obj != null)
                         {
-                            query  = obj.QueryText;
+                            queryText = obj.QueryText;
                         }
                     }
                 }
+
+                if (!string.IsNullOrEmpty(queryText))
+                {
+                    resultString = GetStatements(queryText);
+                }
+
             }
-            List<string> lstString = new List<string>
+            catch (Exception ex)
             {
-                query
-            };
-            return new JsonResult(lstString);
+                resultString.Add(ex.Message);
+            }
+
+            return new JsonResult(resultString);
+        }
+
+        private List<string> GetStatements(string queryText)
+        {
+            List<string> statements = new List<string>();
+            queryText = queryText.Trim();
+            string remaining = queryText;
+            do
+            {
+                var endStatementPosition = remaining.IndexOf(';');
+                var statement = remaining.Substring(0, endStatementPosition+1);
+                remaining = remaining.Substring(endStatementPosition+ 1, remaining.Length - statement.Length);
+                if (!string.IsNullOrEmpty(statement))
+                {
+                    statements.Add(statement);
+                }
+            } while (remaining.Length > 0); 
+            
+           
+
+            return statements;
         }
     }
     public class Query
