@@ -127,7 +127,8 @@ namespace SQL_Parser.Pages
         {
             dynamic use = new ExpandoObject();
             use.Type = "USE";
-            use.Database_Name = SubstringExtensions.Between(statement, "USE", ";", true);
+            var databaseName = SubstringExtensions.Between(statement, "USE", ";", true);
+            use.Database_Name = databaseName;
             return use;
         }
 
@@ -171,15 +172,21 @@ namespace SQL_Parser.Pages
         {
             dynamic insert = new ExpandoObject();
             insert.Type = "INSERT";
-            var insertText = SubstringExtensions.Between(statement, "INSERT INTO", "(", true);
-            insert.Table = insertText.Trim();
+            var tableName = SubstringExtensions.Between(statement, "INSERT INTO", "(", true);
+            insert.Table = tableName.Trim();
             var columnstText = SubstringExtensions.Between(statement, "(", ")", true);
             var columnsArray = columnstText.Split(',');
 
             var valuesText = SubstringExtensions.Between(statement, "VALUES (", ");", true);
             var valuesArray = valuesText.Split(',');
             dynamic columns = new ExpandoObject();
-
+            //Statement validation
+            if (string.IsNullOrEmpty(tableName) || string.IsNullOrWhiteSpace(tableName) || (columnsArray.Length != valuesArray.Length)
+                || (columnsArray.Length == 0) || (valuesArray.Length == 0))
+            {
+                insert.Error = "Invalid statement";
+                return insert;
+            }
             for (int i = 0; i < columnsArray.Length; i++)
             {
                 dynamic column = new ExpandoObject();
@@ -201,7 +208,12 @@ namespace SQL_Parser.Pages
             //Split statement to words
             var words = SubstringExtensions.Between(statement, "SELECT", "FROM").Trim().Replace(" ", "");
             var columnNames = words.Split(',');
-
+            if (string.IsNullOrWhiteSpace(words) ||  columnNames == null || columnNames.Length ==0
+                || !statement.Contains("FROM"))
+            {
+                select.Error = "Invalid statement";
+                return select;
+            }
             //Column names
             foreach (var colName in columnNames)
             {
