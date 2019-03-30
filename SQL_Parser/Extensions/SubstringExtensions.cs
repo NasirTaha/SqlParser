@@ -10,10 +10,18 @@ namespace SQL_Parser.Extensions
         /// <summary>
         /// Get string value between [first] a and [last] b.
         /// </summary>
-        public static string Between(this string value, string a, string b)
+        public static string Between(this string value, string a, string b, bool firstOccurrence = false) 
         {
             int posA = value.IndexOf(a);
-            int posB = value.LastIndexOf(b);
+            int posB = 0;
+            if (firstOccurrence)
+            {
+                posB = value.IndexOf(b);
+            }
+            else
+            {
+                posB = value.LastIndexOf(b);
+            }
             if (posA == -1)
             {
                 return "";
